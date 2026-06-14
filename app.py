@@ -15,8 +15,11 @@ from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 BASE_DIR = Path(__file__).parent
 
-from dotenv import load_dotenv
-load_dotenv(BASE_DIR / '.env')
+try:
+    from dotenv import load_dotenv
+    load_dotenv(BASE_DIR / '.env')
+except Exception:
+    pass
 
 # --- Database ---
 engine = create_engine(f"sqlite:///{BASE_DIR}/contentforge.db", connect_args={"check_same_thread": False})
