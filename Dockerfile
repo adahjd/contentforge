@@ -12,4 +12,4 @@ ENV DATABASE_URL=sqlite:////app/data/contentforge.db
 
 EXPOSE 8080
 
-CMD ["python", "-m", "uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD python -c "import os; import uvicorn; from app import app; uvicorn.run(app, host='0.0.0.0', port=int(os.getenv('PORT', '8080')))"
