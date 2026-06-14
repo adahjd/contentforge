@@ -3,9 +3,6 @@ import os
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from dotenv import load_dotenv
-load_dotenv()
-
 import secrets
 import hashlib
 
@@ -17,6 +14,9 @@ from sqlalchemy import create_engine, Column, String, Integer, Boolean, DateTime
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 BASE_DIR = Path(__file__).parent
+
+from dotenv import load_dotenv
+load_dotenv(BASE_DIR / '.env')
 
 # --- Database ---
 engine = create_engine(f"sqlite:///{BASE_DIR}/contentforge.db", connect_args={"check_same_thread": False})
@@ -298,17 +298,28 @@ def build_prompt(tool_type: str, topic: str, prompt: str, style: str, length: st
     return prompts.get(tool_type, f"{base}{prompt}\n\n主题：{topic}")
 
 async def call_openai(prompt: str) -> str | None:
-    """Call OpenAI API. Falls back to mock content if API key not set."""
-    api_key = os.getenv("OPENAI_API_KEY", "")
-    if not api_key:
-        # Try to read from file
-        key_file = Path.home() / ".openai_key"
-        if key_file.exists():
-            api_key = key_file.read_text().strip()
+    """Call AI API. Supports OpenAI, DeepSeek, or falls back to mock."""
+    import openai
 
+    # Try DeepSeek first
+    api_key = os.getenv("DEEPSEEK_API_KEY", "")
     if api_key:
         try:
-            import openai
+            client = openai.OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
+            resp = client.chat.completions.create(
+                model="deepseek-chat",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.8,
+                max_tokens=4000,
+            )
+            return resp.choices[0].message.content
+        except Exception as e:
+            print(f"DeepSeek error: {e}")
+
+    # Try OpenAI
+    api_key = os.getenv("OPENAI_API_KEY", "")
+    if api_key:
+        try:
             client = openai.OpenAI(api_key=api_key)
             resp = client.chat.completions.create(
                 model="gpt-4o-mini",
