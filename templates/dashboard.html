@@ -1,0 +1,93 @@
+﻿{% extends "base.html" %}
+{% block title %}工作台{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+            <h1 class="text-2xl font-bold">你好，{{ user.username }} 👋</h1>
+            <p class="text-gray-500 mt-1">开始创作吧</p>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="bg-white rounded-xl px-4 py-2 border border-gray-200 flex items-center gap-2">
+                <span class="text-sm text-gray-500">积分:</span>
+                <span class="font-bold text-lg {% if payment_success %}
+<div class="bg-green-50 border border-green-200 rounded-xl px-4 py-3 mb-6 text-sm text-green-700 flex items-center justify-between">
+    <span>🎉 支付成功！你的套餐已升级，享受更多创作权益</span>
+    <button onclick="this.parentElement.remove()" class="text-green-400 hover:text-green-600">&times;</button>
+</div>
+{% endif %}
+
+{% if user.credits <= 3 %}text-red-500{% else %}text-blue-600{% endif %}">{{ user.credits }}</span>
+            </div>
+            <a href="/pricing" class="text-sm font-medium px-4 py-2 rounded-lg gradient-bg text-white hover:opacity-90 transition-opacity">
+                升级套餐
+            </a>
+        </div>
+    </div>
+
+    {% if payment_success %}
+<div class="bg-green-50 border border-green-200 rounded-xl px-4 py-3 mb-6 text-sm text-green-700 flex items-center justify-between">
+    <span>🎉 支付成功！你的套餐已升级，享受更多创作权益</span>
+    <button onclick="this.parentElement.remove()" class="text-green-400 hover:text-green-600">&times;</button>
+</div>
+{% endif %}
+
+{% if user.credits <= 3 %}
+    <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-8 text-sm text-amber-700 flex items-center justify-between">
+        <span>⚠️ 积分即将用尽，升级套餐继续畅享AI创作</span>
+        <a href="/pricing" class="font-medium underline">立即升级 →</a>
+    </div>
+    {% endif %}
+
+    <!-- Tools -->
+    <h2 class="text-lg font-semibold mb-4">选择创作工具</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
+        {% for tool in tools %}
+        <a href="/tool/{{ tool.id }}" class="bg-white rounded-xl p-4 border border-gray-100 text-center card-hover group block">
+            <div class="w-10 h-10 rounded-lg bg-{{ tool.color }}-50 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-{{ tool.icon }} text-{{ tool.color }}-500"></i>
+            </div>
+            <span class="text-sm font-medium">{{ tool.name }}</span>
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Recent -->
+    <h2 class="text-lg font-semibold mb-4">最近生成</h2>
+    {% if generations %}
+    <div class="bg-white rounded-xl border border-gray-100 overflow-hidden">
+        <table class="w-full">
+            <thead>
+                <tr class="bg-gray-50 text-left text-sm text-gray-500">
+                    <th class="px-4 py-3 font-medium">类型</th>
+                    <th class="px-4 py-3 font-medium">提示词</th>
+                    <th class="px-4 py-3 font-medium">时间</th>
+                    <th class="px-4 py-3 font-medium">字数</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+                {% for g in generations %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 py-3">
+                        <span class="text-xs px-2 py-1 rounded-full bg-blue-50 text-blue-600 font-medium">
+                            {% for t in tools %}{% if t.id == g.tool_type %}{{ t.name }}{% endif %}{% endfor %}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">{{ g.prompt }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-400">{{ g.created_at.strftime('%m-%d %H:%M') }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-400">{{ g.tokens_used * 4 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl border border-gray-100 p-12 text-center">
+        <div class="text-4xl mb-3">📝</div>
+        <p class="text-gray-500">还没有生成记录，选择一个工具开始创作吧</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

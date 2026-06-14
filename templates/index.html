@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}ContentForge — AI内容创作平台{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50"></div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32">
+        <div class="text-center max-w-3xl mx-auto">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium mb-6">
+                🔥 已有 10,000+ 创作者在使用
+            </div>
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6">
+                用AI<span class="gradient-text"> 10倍速 </span>创作内容
+            </h1>
+            <p class="text-lg sm:text-xl text-gray-500 mb-10 leading-relaxed">
+                博客文章、社交媒体、营销邮件、产品描述……<br class="hidden sm:block">
+                输入关键词，30秒生成高质量内容。让你的创作效率飞起来。
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="/register" class="px-8 py-3.5 rounded-xl gradient-bg text-white font-semibold text-lg hover:opacity-90 transition-opacity shadow-lg shadow-blue-500/25">
+                    免费开始使用 →
+                </a>
+                <a href="/pricing" class="px-8 py-3.5 rounded-xl border-2 border-gray-200 text-gray-700 font-semibold text-lg hover:border-gray-300 transition-colors">
+                    查看定价
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Tools Grid -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+    <div class="text-center mb-14">
+        <h2 class="text-3xl font-bold mb-4">六大AI创作工具</h2>
+        <p class="text-gray-500 text-lg">覆盖你所有的内容创作场景</p>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for tool in tools %}
+        <div class="bg-white rounded-2xl p-6 border border-gray-100 card-hover cursor-pointer group">
+            <div class="w-12 h-12 rounded-xl bg-{{ tool.color }}-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-{{ tool.icon }} text-{{ tool.color }}-500 text-xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold mb-2">{{ tool.name }}</h3>
+            <p class="text-gray-500 text-sm">{{ tool.desc }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Features -->
+<section class="bg-white py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-14">
+            <h2 class="text-3xl font-bold mb-4">为什么选择 ContentForge</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="text-center p-6">
+                <div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mx-auto mb-4">
+                    <i class="fa-solid fa-bolt text-blue-500 text-2xl"></i>
+                </div>
+                <h3 class="font-semibold mb-2">极速生成</h3>
+                <p class="text-gray-500 text-sm">平均30秒完成一篇高质量文章，效率提升10倍</p>
+            </div>
+            <div class="text-center p-6">
+                <div class="w-14 h-14 rounded-2xl bg-purple-50 flex items-center justify-center mx-auto mb-4">
+                    <i class="fa-solid fa-wand-magic-sparkles text-purple-500 text-2xl"></i>
+                </div>
+                <h3 class="font-semibold mb-2">GPT-4驱动</h3>
+                <p class="text-gray-500 text-sm">基于最新大语言模型，内容质量有保障</p>
+            </div>
+            <div class="text-center p-6">
+                <div class="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center mx-auto mb-4">
+                    <i class="fa-solid fa-yuan-sign text-green-500 text-2xl"></i>
+                </div>
+                <h3 class="font-semibold mb-2">超高性价比</h3>
+                <p class="text-gray-500 text-sm">免费开始，付费版每月仅需一杯咖啡的价格</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+    <div class="gradient-bg rounded-3xl p-10 sm:p-16 text-center text-white">
+        <h2 class="text-3xl font-bold mb-4">准备好提升你的创作效率了吗？</h2>
+        <p class="text-blue-100 mb-8 text-lg">免费注册，立即体验AI创作的力量</p>
+        <a href="/register" class="inline-block px-8 py-3.5 rounded-xl bg-white text-blue-600 font-semibold text-lg hover:bg-gray-50 transition-colors">
+            免费注册 →
+        </a>
+    </div>
+</section>
+{% endblock %}

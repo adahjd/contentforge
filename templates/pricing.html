@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}定价{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="text-center mb-14">
+        <h1 class="text-3xl sm:text-4xl font-bold mb-4">选择适合你的套餐</h1>
+        <p class="text-gray-500 text-lg">免费开始，随时升级</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        {% for plan_id, plan in plans.items() %}
+        <div class="bg-white rounded-2xl border {% if plan_id == 'pro' %}border-blue-300 shadow-lg shadow-blue-100 ring-2 ring-blue-500{% else %}border-gray-100{% endif %} p-8 relative {% if plan_id == 'pro' %}scale-[1.03]{% endif %}">
+            {% if plan_id == 'pro' %}
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full gradient-bg text-white text-xs font-semibold">最受欢迎</div>
+            {% endif %}
+            <h3 class="text-xl font-bold mb-2">{{ plan.name }}</h3>
+            <div class="mb-6">
+                {% if plan.price > 0 %}
+                <span class="text-4xl font-extrabold">¥{{ plan.price }}</span>
+                <span class="text-gray-400">/月</span>
+                {% else %}
+                <span class="text-4xl font-extrabold">免费</span>
+                {% endif %}
+            </div>
+            <ul class="space-y-3 mb-8">
+                {% for feature in plan.features %}
+                <li class="flex items-start gap-2 text-sm text-gray-600">
+                    <i class="fa-solid fa-check text-green-500 mt-0.5"></i> {{ feature }}
+                </li>
+                {% endfor %}
+            </ul>
+            {% if user and user.plan == plan_id %}
+            <button class="w-full py-3 rounded-xl border-2 border-gray-200 text-gray-400 font-semibold cursor-not-allowed" disabled>
+                当前套餐
+            </button>
+            {% elif plan.price == 0 %}
+            <a href="/register" class="block text-center w-full py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-semibold hover:border-gray-300 transition-colors">
+                免费开始
+            </a>
+            {% else %}
+            <button onclick="checkout('{{ plan_id }}')" class="w-full py-3 rounded-xl gradient-bg text-white font-semibold hover:opacity-90 transition-opacity">
+                立即订阅
+            </button>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+async function checkout(planId) {
+    {% if not user %}
+    window.location.href = '/register';
+    return;
+    {% endif %}
+    try {
+        const resp = await fetch('/api/payment/create-checkout', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({plan: planId})
+        });
+        const data = await resp.json();
+        if (data.url) {
+            window.location.href = data.url;
+        } else {
+            alert('支付服务暂未配置。演示模式中，套餐已自动升级！');
+            window.location.reload();
+        }
+    } catch(e) {
+        alert('支付服务暂未配置。演示模式中，点击确定即可体验。');
+        window.location.reload();
+    }
+}
+</script>
+{% endblock %}
