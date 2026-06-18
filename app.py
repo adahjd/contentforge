@@ -172,24 +172,24 @@ async def pricing_page(request: Request, user: User | None = Depends(get_current
 async def dashboard(request: Request, user: User | None = Depends(get_current_user), db: Session = Depends(get_db)):
     if not user:
         return RedirectResponse("/login")
-        payment_success = False
-        if request.query_params.get("payment") == "success":
-            payment_success = True
-            session_id = request.query_params.get("session_id", "")
-            if session_id and stripe_available:
-                try:
-                    s = stripe.checkout.Session.retrieve(session_id)
-                    if s.payment_status == "paid":
-                        plan_id = s.metadata.get("plan", "pro")
-                        if plan_id in PLANS:
-                            user.plan = plan_id
-                            user.credits = PLANS[plan_id]["credits"]
-                            order = db.query(Order).filter_by(stripe_session_id=session_id).first()
-                            if order:
-                                order.status = "completed"
-                            db.commit()
-                except Exception:
-                    pass
+    payment_success = False
+    if request.query_params.get("payment") == "success":
+        payment_success = True
+        session_id = request.query_params.get("session_id", "")
+        if session_id and stripe_available:
+            try:
+                s = stripe.checkout.Session.retrieve(session_id)
+                if s.payment_status == "paid":
+                    plan_id = s.metadata.get("plan", "pro")
+                    if plan_id in PLANS:
+                        user.plan = plan_id
+                        user.credits = PLANS[plan_id]["credits"]
+                        order = db.query(Order).filter_by(stripe_session_id=session_id).first()
+                        if order:
+                            order.status = "completed"
+                        db.commit()
+            except Exception:
+                pass
     generations = db.query(Generation).filter_by(user_id=user.id).order_by(Generation.created_at.desc()).limit(10).all()
     return templates.TemplateResponse(request, "dashboard.html", template_ctx(request, user, generations=generations, active_page="dashboard", payment_success=payment_success))
 
