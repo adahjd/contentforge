@@ -509,6 +509,19 @@ async def create_checkout(
 
 
 
+
+
+# --- Debug: check env vars ---
+@app.get("/debug/env")
+async def debug_env():
+    import os
+    return {
+        "deepseek_set": bool(os.getenv("DEEPSEEK_API_KEY")),
+        "stripe_set": bool(os.getenv("STRIPE_SECRET_KEY")),
+        "secret_set": bool(os.getenv("SECRET_KEY")),
+        "port": os.getenv("PORT", "not set"),
+    }
+
 # --- Health Check ---
 @app.get("/health")
 async def health():
