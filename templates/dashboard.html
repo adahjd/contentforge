@@ -1,93 +1,99 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block title %}工作台{% endblock %}
-
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+<h1 class="text-xl font-bold mb-6">AI 文案生成</h1>
+
+<!-- Generate Form -->
+<form id="genForm" class="bg-white rounded-xl border border-gray-200 p-6 mb-8 space-y-4">
+    <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">主题 <span class="text-red-400">*</span></label>
+        <input type="text" name="topic" id="topic" required
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+            placeholder="输入你想写的主题，例如：新品上市通知、节日促销活动...">
+    </div>
+    <div class="grid grid-cols-2 gap-4">
         <div>
-            <h1 class="text-2xl font-bold">你好，{{ user.username }} 👋</h1>
-            <p class="text-gray-500 mt-1">开始创作吧</p>
+            <label class="block text-sm font-medium text-gray-700 mb-1">风格</label>
+            <select name="style" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none">
+                <option value="professional">专业正式</option>
+                <option value="casual">轻松活泼</option>
+                <option value="persuasive">有说服力</option>
+            </select>
         </div>
-        <div class="flex items-center gap-4">
-            <div class="bg-white rounded-xl px-4 py-2 border border-gray-200 flex items-center gap-2">
-                <span class="text-sm text-gray-500">积分:</span>
-                <span class="font-bold text-lg {% if payment_success %}
-<div class="bg-green-50 border border-green-200 rounded-xl px-4 py-3 mb-6 text-sm text-green-700 flex items-center justify-between">
-    <span>🎉 支付成功！你的套餐已升级，享受更多创作权益</span>
-    <button onclick="this.parentElement.remove()" class="text-green-400 hover:text-green-600">&times;</button>
-</div>
-{% endif %}
-
-{% if user.credits <= 3 %}text-red-500{% else %}text-blue-600{% endif %}">{{ user.credits }}</span>
-            </div>
-            <a href="/pricing" class="text-sm font-medium px-4 py-2 rounded-lg gradient-bg text-white hover:opacity-90 transition-opacity">
-                升级套餐
-            </a>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">长度</label>
+            <select name="length" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none">
+                <option value="short">简短</option>
+                <option value="medium" selected>中等</option>
+                <option value="long">详细</option>
+            </select>
         </div>
     </div>
+    <button type="submit" id="submitBtn"
+        class="w-full py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-50">
+        开始生成
+    </button>
+</form>
 
-    {% if payment_success %}
-<div class="bg-green-50 border border-green-200 rounded-xl px-4 py-3 mb-6 text-sm text-green-700 flex items-center justify-between">
-    <span>🎉 支付成功！你的套餐已升级，享受更多创作权益</span>
-    <button onclick="this.parentElement.remove()" class="text-green-400 hover:text-green-600">&times;</button>
+<!-- Result -->
+<div id="resultBox" class="hidden bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div class="flex items-center justify-between px-4 py-3 bg-gray-50 border-b">
+        <span class="text-sm font-medium">生成结果</span>
+        <button onclick="copyResult()" id="copyBtn" class="text-sm text-gray-400 hover:text-blue-600">复制</button>
+    </div>
+    <div id="resultText" class="p-6 text-gray-700 leading-relaxed whitespace-pre-wrap"></div>
+</div>
+
+<!-- History -->
+{% if history %}
+<h2 class="text-lg font-semibold mt-10 mb-4">历史记录</h2>
+<div class="space-y-3">
+    {% for g in history %}
+    <div class="bg-white rounded-xl border border-gray-100 p-4">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-medium text-gray-800">{{ g.topic }}</span>
+            <span class="text-xs text-gray-400">{{ g.created_at.strftime('%m-%d %H:%M') }}</span>
+        </div>
+        <p class="text-sm text-gray-500 line-clamp-2">{{ g.result[:150] }}...</p>
+    </div>
+    {% endfor %}
 </div>
 {% endif %}
+{% endblock %}
 
-{% if user.credits <= 3 %}
-    <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-8 text-sm text-amber-700 flex items-center justify-between">
-        <span>⚠️ 积分即将用尽，升级套餐继续畅享AI创作</span>
-        <a href="/pricing" class="font-medium underline">立即升级 →</a>
-    </div>
-    {% endif %}
+{% block extra_scripts %}
+<script>
+document.getElementById('genForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = '生成中...';
+    document.getElementById('resultBox').classList.add('hidden');
 
-    <!-- Tools -->
-    <h2 class="text-lg font-semibold mb-4">选择创作工具</h2>
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
-        {% for tool in tools %}
-        <a href="/tool/{{ tool.id }}" class="bg-white rounded-xl p-4 border border-gray-100 text-center card-hover group block">
-            <div class="w-10 h-10 rounded-lg bg-{{ tool.color }}-50 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                <i class="fa-solid fa-{{ tool.icon }} text-{{ tool.color }}-500"></i>
-            </div>
-            <span class="text-sm font-medium">{{ tool.name }}</span>
-        </a>
-        {% endfor %}
-    </div>
+    const formData = new FormData(this);
+    try {
+        const resp = await fetch('/api/generate', { method: 'POST', body: formData });
+        const data = await resp.json();
+        if (data.success) {
+            document.getElementById('resultText').textContent = data.result;
+            document.getElementById('resultBox').classList.remove('hidden');
+            document.getElementById('resultBox').scrollIntoView({behavior: 'smooth'});
+        } else {
+            alert(data.error || '生成失败');
+        }
+    } catch(err) {
+        alert('网络错误，请重试');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '开始生成';
+    }
+});
 
-    <!-- Recent -->
-    <h2 class="text-lg font-semibold mb-4">最近生成</h2>
-    {% if generations %}
-    <div class="bg-white rounded-xl border border-gray-100 overflow-hidden">
-        <table class="w-full">
-            <thead>
-                <tr class="bg-gray-50 text-left text-sm text-gray-500">
-                    <th class="px-4 py-3 font-medium">类型</th>
-                    <th class="px-4 py-3 font-medium">提示词</th>
-                    <th class="px-4 py-3 font-medium">时间</th>
-                    <th class="px-4 py-3 font-medium">字数</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-50">
-                {% for g in generations %}
-                <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="px-4 py-3">
-                        <span class="text-xs px-2 py-1 rounded-full bg-blue-50 text-blue-600 font-medium">
-                            {% for t in tools %}{% if t.id == g.tool_type %}{{ t.name }}{% endif %}{% endfor %}
-                        </span>
-                    </td>
-                    <td class="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">{{ g.prompt }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-400">{{ g.created_at.strftime('%m-%d %H:%M') }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-400">{{ g.tokens_used * 4 }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% else %}
-    <div class="bg-white rounded-xl border border-gray-100 p-12 text-center">
-        <div class="text-4xl mb-3">📝</div>
-        <p class="text-gray-500">还没有生成记录，选择一个工具开始创作吧</p>
-    </div>
-    {% endif %}
-</div>
+async function copyResult() {
+    await navigator.clipboard.writeText(document.getElementById('resultText').textContent);
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '已复制';
+    setTimeout(() => { btn.textContent = '复制'; }, 2000);
+}
+</script>
 {% endblock %}
